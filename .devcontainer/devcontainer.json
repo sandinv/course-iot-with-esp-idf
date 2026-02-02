@@ -1,6 +1,13 @@
 {
     "name": "ESP-IDF Development Environment",
-    "image": "env-esp-idf",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": "..",
+        "args": {
+            "IDF_VERSION": "5.4.1",
+            "INSTALL_MOSQUITTO": "false"
+        }
+    },
     "customizations": {
         "vscode": {
             "extensions": [
@@ -10,18 +17,12 @@
             ]
         }
     },
-    "workspaceMount": "source=${localWorkspaceFolder}/workspace,target=/workspace,type=bind,consistency=cached",
+    "mounts": [
+        "source=${localWorkspaceFolder}/apps,target=/workspace/apps,type=bind,consistency=cached"
+    ],
     "workspaceFolder": "/workspace",
     "runArgs": [
-        "--rm",
-        "-it",
-        "--network=bridge",
-        "-p", "3333:3333",
-        "-p", "1883:1883",
-        "-p", "8080:8080",
-        "-p", "8081:8081",
-        "-p", "8800:8800",
-        "-p", "8883:8883"
+        "--network=bridge"
     ],
     "remoteUser": "root"
 }

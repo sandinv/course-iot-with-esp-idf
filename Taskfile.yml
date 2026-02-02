@@ -1,0 +1,92 @@
+version: "3"
+
+vars:
+  APP: '{{.APP | default ""}}'
+  PORT: '{{.PORT | default "/dev/tty.usbserial-0001"}}'
+  BAUD: '{{.BAUD | default "460800"}}'
+  TARGET: '{{.TARGET | default "esp32"}}'
+  CONTAINER: '{{.CONTAINER | default ""}}'
+
+tasks:
+  # Build tasks (run inside devcontainer)
+  build:
+    desc: Build the ESP-IDF application (runs in container)
+    cmds:
+      - docker exec -w /workspace/apps/{{.APP}} {{.CONTAINER}} bash -c ". /opt/toolchains/esp-idf/export.sh && idf.py set-target {{.TARGET}} && idf.py build"
+    preconditions:
+      - sh: test -n "{{.APP}}"
+        msg: "APP is required. Usage: task build APP=my_app CONTAINER=container_name"
+      - sh: test -n "{{.CONTAINER}}"
+        msg: "CONTAINER is required. Get it with 'docker ps'. Usage: task build APP=my_app CONTAINER=container_name"
+      - sh: test -d apps/{{.APP}}
+        msg: "App directory apps/{{.APP}} does not exist"
+
+  clean:
+    desc: Clean the build directory (runs in container)
+    cmds:
+      - docker exec -w /workspace/apps/{{.APP}} {{.CONTAINER}} bash -c ". /opt/toolchains/esp-idf/export.sh && idf.py fullclean"
+    preconditions:
+      - sh: test -n "{{.APP}}"
+        msg: "APP is required. Usage: task clean APP=my_app CONTAINER=container_name"
+      - sh: test -n "{{.CONTAINER}}"
+        msg: "CONTAINER is required."
+
+  menuconfig:
+    desc: Open ESP-IDF configuration menu (runs in container)
+    cmds:
+      - docker exec -it -w /workspace/apps/{{.APP}} {{.CONTAINER}} bash -c ". /opt/toolchains/esp-idf/export.sh && idf.py menuconfig"
+    preconditions:
+      - sh: test -n "{{.APP}}"
+        msg: "APP is required. Usage: task menuconfig APP=my_app CONTAINER=container_name"
+      - sh: test -n "{{.CONTAINER}}"
+        msg: "CONTAINER is required."
+
+  size:
+    desc: Show application size information (runs in container)
+    cmds:
+      - docker exec -w /workspace/apps/{{.APP}} {{.CONTAINER}} bash -c ". /opt/toolchains/esp-idf/export.sh && idf.py size"
+    preconditions:
+      - sh: test -n "{{.APP}}"
+        msg: "APP is required. Usage: task size APP=my_app CONTAINER=container_name"
+      - sh: test -n "{{.CONTAINER}}"
+        msg: "CONTAINER is required."
+
+  # Flash tasks (run on macOS host)
+  flash:
+    desc: Flash the application to device (runs on host)
+    cmds:
+      - esptool.py --chip {{.TARGET}} -p {{.PORT}} -b {{.BAUD}} --before default_reset --after hard_reset write_flash @apps/{{.APP}}/build/flash_args
+    preconditions:
+      - sh: test -n "{{.APP}}"
+        msg: "APP is required. Usage: task flash APP=my_app"
+      - sh: test -f apps/{{.APP}}/build/flash_args
+        msg: "Build not found. Run 'task build APP={{.APP}} CONTAINER=...' first"
+      - sh: command -v esptool.py
+        msg: "esptool.py not found. Install with: pip install esptool"
+
+  monitor:
+    desc: Open serial monitor (runs on host)
+    cmds:
+      - python -m serial.tools.miniterm {{.PORT}} 115200
+    preconditions:
+      - sh: command -v python
+        msg: "Python not found"
+
+  erase-flash:
+    desc: Erase entire flash (runs on host)
+    cmds:
+      - esptool.py --chip {{.TARGET}} -p {{.PORT}} erase_flash
+    preconditions:
+      - sh: command -v esptool.py
+        msg: "esptool.py not found. Install with: pip install esptool"
+
+  # Utility tasks
+  list:
+    desc: List available apps
+    cmds:
+      - ls -1 apps 2>/dev/null | grep -v '^\.' || echo "No apps found"
+
+  ps:
+    desc: Show running containers (to get CONTAINER name)
+    cmds:
+      - docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
