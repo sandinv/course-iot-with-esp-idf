@@ -139,6 +139,11 @@ RUN /bin/bash -c "source /opt/toolchains/esp-idf/export.sh && \
 #-------------------------------------------------------------------------------
 # Entrypoint
 
+# Copy workspace file (repo will be mounted at /workspace/project)
+COPY .devcontainer/esp-idf.code-workspace /workspace/esp-idf.code-workspace
+
+WORKDIR /workspace
+
 COPY scripts/esp-idf/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

@@ -12,7 +12,7 @@ tasks:
   build:
     desc: Build the ESP-IDF application (runs in container)
     cmds:
-      - docker exec -w /workspace/apps/{{.APP}} {{.CONTAINER}} bash -c ". /opt/toolchains/esp-idf/export.sh && idf.py set-target {{.TARGET}} && idf.py build"
+      - docker exec -w /workspace/project/apps/{{.APP}} {{.CONTAINER}} bash -c ". /opt/toolchains/esp-idf/export.sh && idf.py set-target {{.TARGET}} && idf.py build"
     preconditions:
       - sh: test -n "{{.APP}}"
         msg: "APP is required. Usage: task build APP=my_app CONTAINER=container_name"
@@ -24,7 +24,7 @@ tasks:
   clean:
     desc: Clean the build directory (runs in container)
     cmds:
-      - docker exec -w /workspace/apps/{{.APP}} {{.CONTAINER}} bash -c ". /opt/toolchains/esp-idf/export.sh && idf.py fullclean"
+      - docker exec -w /workspace/project/apps/{{.APP}} {{.CONTAINER}} bash -c ". /opt/toolchains/esp-idf/export.sh && idf.py fullclean"
     preconditions:
       - sh: test -n "{{.APP}}"
         msg: "APP is required. Usage: task clean APP=my_app CONTAINER=container_name"
@@ -34,7 +34,7 @@ tasks:
   menuconfig:
     desc: Open ESP-IDF configuration menu (runs in container)
     cmds:
-      - docker exec -it -w /workspace/apps/{{.APP}} {{.CONTAINER}} bash -c ". /opt/toolchains/esp-idf/export.sh && idf.py menuconfig"
+      - docker exec -it -w /workspace/project/apps/{{.APP}} {{.CONTAINER}} bash -c ". /opt/toolchains/esp-idf/export.sh && idf.py menuconfig"
     preconditions:
       - sh: test -n "{{.APP}}"
         msg: "APP is required. Usage: task menuconfig APP=my_app CONTAINER=container_name"
@@ -44,7 +44,7 @@ tasks:
   size:
     desc: Show application size information (runs in container)
     cmds:
-      - docker exec -w /workspace/apps/{{.APP}} {{.CONTAINER}} bash -c ". /opt/toolchains/esp-idf/export.sh && idf.py size"
+      - docker exec -w /workspace/project/apps/{{.APP}} {{.CONTAINER}} bash -c ". /opt/toolchains/esp-idf/export.sh && idf.py size"
     preconditions:
       - sh: test -n "{{.APP}}"
         msg: "APP is required. Usage: task size APP=my_app CONTAINER=container_name"

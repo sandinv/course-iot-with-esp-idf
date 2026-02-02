@@ -10,8 +10,8 @@ export XTENSA_C_COMPILER_PATH=$(whereis -b xtensa-esp-elf-gcc | cut -d ' ' -f2)
 export XTENSA_CPP_COMPILER_PATH=$(whereis -b xtensa-esp-elf-g++ | cut -d ' ' -f2)
 
 # Copy the C/C++ extension configuration
-mkdir -p /workspace/apps/.vscode
-cp /c_cpp_properties.json /workspace/apps/.vscode/c_cpp_properties.json
+mkdir -p /workspace/project/apps/.vscode
+cp /c_cpp_properties.json /workspace/project/apps/.vscode/c_cpp_properties.json
 
 # Start Mosquitto if installed
 if [ "$INSTALL_MOSQUITTO" = "true" ] && command -v mosquitto &> /dev/null; then

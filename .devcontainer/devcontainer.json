@@ -19,10 +19,8 @@
             ]
         }
     },
-    "mounts": [
-        "source=${localWorkspaceFolder}/apps,target=/workspace/apps,type=bind,consistency=cached"
-    ],
-    "workspaceFolder": "/workspace",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace/project,type=bind,consistency=cached",
+    "workspaceFolder": "/workspace/esp-idf.code-workspace",
     "runArgs": [
         "--network=bridge"
     ],
