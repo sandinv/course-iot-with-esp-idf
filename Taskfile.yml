@@ -5,7 +5,8 @@ vars:
   PORT: '{{.PORT | default "/dev/tty.usbserial-0001"}}'
   BAUD: '{{.BAUD | default "460800"}}'
   TARGET: '{{.TARGET | default "esp32"}}'
-  CONTAINER: '{{.CONTAINER | default ""}}'
+  CONTAINER:
+    sh: docker ps | grep "vsc-course-iot-with-esp-idf" | awk '{print $NF}' | head -1
 
 tasks:
   # Build tasks (run inside devcontainer)
@@ -14,10 +15,8 @@ tasks:
     cmds:
       - docker exec -w /workspace/project/apps/{{.APP}} {{.CONTAINER}} bash -c ". /opt/toolchains/esp-idf/export.sh && idf.py set-target {{.TARGET}} && idf.py build"
     preconditions:
-      - sh: test -n "{{.APP}}"
-        msg: "APP is required. Usage: task build APP=my_app CONTAINER=container_name"
       - sh: test -n "{{.CONTAINER}}"
-        msg: "CONTAINER is required. Get it with 'docker ps'. Usage: task build APP=my_app CONTAINER=container_name"
+        msg: "No running devcontainer found. Start the devcontainer first. {{.CONTAINER}}"
       - sh: test -d apps/{{.APP}}
         msg: "App directory apps/{{.APP}} does not exist"
 
@@ -29,7 +28,7 @@ tasks:
       - sh: test -n "{{.APP}}"
         msg: "APP is required. Usage: task clean APP=my_app CONTAINER=container_name"
       - sh: test -n "{{.CONTAINER}}"
-        msg: "CONTAINER is required."
+        msg: "No running devcontainer found. Start the devcontainer first."
 
   menuconfig:
     desc: Open ESP-IDF configuration menu (runs in container)
@@ -39,7 +38,7 @@ tasks:
       - sh: test -n "{{.APP}}"
         msg: "APP is required. Usage: task menuconfig APP=my_app CONTAINER=container_name"
       - sh: test -n "{{.CONTAINER}}"
-        msg: "CONTAINER is required."
+        msg: "No running devcontainer found. Start the devcontainer first."
 
   size:
     desc: Show application size information (runs in container)
@@ -49,20 +48,19 @@ tasks:
       - sh: test -n "{{.APP}}"
         msg: "APP is required. Usage: task size APP=my_app CONTAINER=container_name"
       - sh: test -n "{{.CONTAINER}}"
-        msg: "CONTAINER is required."
+        msg: "No running devcontainer found. Start the devcontainer first."
 
   # Flash tasks (run on macOS host)
   flash:
     desc: Flash the application to device (runs on host)
+    dir: apps/{{.APP}}/build
     cmds:
-      - esptool.py --chip {{.TARGET}} -p {{.PORT}} -b {{.BAUD}} --before default_reset --after hard_reset write_flash @apps/{{.APP}}/build/flash_args
+      - esptool --chip {{.TARGET}} -p {{.PORT}} -b {{.BAUD}} --before default-reset --after hard-reset write-flash @flash_args
     preconditions:
-      - sh: test -n "{{.APP}}"
-        msg: "APP is required. Usage: task flash APP=my_app"
-      - sh: test -f apps/{{.APP}}/build/flash_args
+      - sh: '[ -f flash_args ]'
         msg: "Build not found. Run 'task build APP={{.APP}} CONTAINER=...' first"
-      - sh: command -v esptool.py
-        msg: "esptool.py not found. Install with: pip install esptool"
+      - sh: command -v esptool
+        msg: "esptool not found. Install with: pip install esptool"
 
   monitor:
     desc: Open serial monitor (runs on host)
@@ -89,4 +87,4 @@ tasks:
   ps:
     desc: Show running containers (to get CONTAINER name)
     cmds:
-      - docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
+      - docker ps --format "table {{printf "{{.Names}}\t{{.Image}}\t{{.Status}}" }}"
