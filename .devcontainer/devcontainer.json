@@ -6,6 +6,7 @@
         "context": "..",
         "args": {
             "IDF_VERSION": "5.4.1",
+            "IDF_TARGETS": "esp32",
             "INSTALL_MOSQUITTO": "false"
         }
     },

@@ -22,11 +22,23 @@ Your apps go in the `apps/` folder, which is bind-mounted into the container at 
 
 Edit `.devcontainer/devcontainer.json` to customize the environment:
 
-### ESP-IDF Version
+### ESP-IDF Version and Targets
 
 ```json
 "args": {
-    "IDF_VERSION": "5.4.1"
+    "IDF_VERSION": "5.4.1",
+    "IDF_TARGETS": "esp32"
+}
+```
+
+`IDF_TARGETS` controls which chip toolchains are installed. Options: `esp32`, `esp32s2`, `esp32s3`, `esp32c3`, `esp32c6`, `esp32h2`.
+
+For multiple targets (increases image size):
+
+```json
+"args": {
+    "IDF_VERSION": "5.4.1",
+    "IDF_TARGETS": "esp32 esp32s3 esp32c3"
 }
 ```
 
@@ -137,7 +149,7 @@ task erase-flash
 | CONTAINER | (required for build) | Docker container name |
 | PORT | /dev/tty.usbserial-0001 | Serial port |
 | BAUD | 460800 | Flash baud rate |
-| TARGET | esp32s3 | Target chip |
+| TARGET | esp32 | Target chip |
 
 ### Utility Commands
 
